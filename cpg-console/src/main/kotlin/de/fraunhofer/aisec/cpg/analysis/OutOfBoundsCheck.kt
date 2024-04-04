@@ -43,12 +43,12 @@ import org.jline.utils.AttributedStyle.DEFAULT
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class OutOfBoundsCheck {
+class OutOfBoundsCheck : Analyzer {
 
     private val log: Logger
         get() = LoggerFactory.getLogger(OutOfBoundsCheck::class.java)
 
-    fun run(result: TranslationResult) {
+    override fun run(result: TranslationResult) {
         for (tu in result.components.flatMap { it.translationUnits }) {
             tu.accept(
                 Strategy::AST_FORWARD,
@@ -77,11 +77,21 @@ class OutOfBoundsCheck {
                                     DEFAULT.foreground(AttributedStyle.GREEN)
                                 )
                                 sb.append(
-                                    " when accessing index ${AttributedString(""+resolvedIndex, DEFAULT.foreground(AttributedStyle.CYAN)).toAnsi()} of "
+                                    " when accessing index ${
+                                        AttributedString(
+                                            "" + resolvedIndex,
+                                            DEFAULT.foreground(AttributedStyle.CYAN)
+                                        ).toAnsi()
+                                    } of "
                                 )
                                 sb.append(decl.name, DEFAULT.foreground(AttributedStyle.YELLOW))
                                 sb.append(
-                                    ", an array of length ${AttributedString(""+capacity, DEFAULT.foreground(AttributedStyle.CYAN)).toAnsi()} ---"
+                                    ", an array of length ${
+                                        AttributedString(
+                                            "" + capacity,
+                                            DEFAULT.foreground(AttributedStyle.CYAN)
+                                        ).toAnsi()
+                                    } ---"
                                 )
 
                                 val header = sb.toAnsi()
@@ -89,25 +99,36 @@ class OutOfBoundsCheck {
                                 println(header)
                                 println(
                                     "${
-                                            AttributedString(
-                                                PhysicalLocation.locationLink(v.location), DEFAULT.foreground(
-                                                    AttributedStyle.BLUE or AttributedStyle.BRIGHT
-                                                )).toAnsi()}: ${v.fancyCode(showNumbers = false)}"
+                                        AttributedString(
+                                            PhysicalLocation.locationLink(v.location), DEFAULT.foreground(
+                                                AttributedStyle.BLUE or AttributedStyle.BRIGHT
+                                            )
+                                        ).toAnsi()
+                                    }: ${v.fancyCode(showNumbers = false)}"
                                 )
                                 println("")
                                 println(
-                                    "The following path was discovered that leads to ${v.subscriptExpression.fancyCode(
+                                    "The following path was discovered that leads to ${
+                                        v.subscriptExpression.fancyCode(
                                             showNumbers = false
                                         )
-                                        } being ${AttributedString(""+resolvedIndex, DEFAULT.foreground(AttributedStyle.CYAN)).toAnsi()}:"
+                                    } being ${
+                                        AttributedString(
+                                            "" + resolvedIndex,
+                                            DEFAULT.foreground(AttributedStyle.CYAN)
+                                        ).toAnsi()
+                                    }:"
                                 )
                                 for (p in evaluator.path) {
 
                                     println(
-                                        "${AttributedString(
+                                        "${
+                                            AttributedString(
                                                 PhysicalLocation.locationLink(p.location), DEFAULT.foreground(
                                                     AttributedStyle.BLUE or AttributedStyle.BRIGHT
-                                                )).toAnsi()}: ${p.fancyCode(showNumbers = false)}"
+                                                )
+                                            ).toAnsi()
+                                        }: ${p.fancyCode(showNumbers = false)}"
                                     )
                                 }
                             }

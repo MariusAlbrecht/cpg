@@ -44,11 +44,11 @@ import org.jline.utils.AttributedStyle.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class NullPointerCheck {
+class NullPointerCheck: Analyzer {
     private val log: Logger
         get() = LoggerFactory.getLogger(OutOfBoundsCheck::class.java)
 
-    fun run(result: TranslationResult) {
+    override fun run(result: TranslationResult) {
         for (tu in result.components.flatMap { it.translationUnits }) {
             tu.accept(
                 Strategy::AST_FORWARD,
