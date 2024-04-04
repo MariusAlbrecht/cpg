@@ -32,61 +32,33 @@ import org.jetbrains.kotlinx.ki.shell.Plugin
 import org.jetbrains.kotlinx.ki.shell.Shell
 import org.jetbrains.kotlinx.ki.shell.configuration.ReplConfiguration
 
-private const val s = "Analyzer"
-
 class RunPlugin : Plugin {
     inner class Load(conf: ReplConfiguration) : BaseCommand() {
         override val name: String by conf.get(default = "run")
         override val short: String by conf.get(default = "r")
-        override val description: String = "runs an analyzer, or multiple separated by space."
+        override val description: String =
+            "runs an analyzer, or multiple separated by space, or all if none " + "are specified"
 
         override val params = "<analyzer>"
 
         override fun execute(line: String): Command.Result {
+            val snippet = mutableListOf<String>() // to be constructed
             val p = line.indexOf(' ')
             if (p == -1) {
-                return Command.Result.Failure("not enough arguments")
-            }
+                // no analyzer specified -> run all
+                snippet.add("de.fraunhofer.aisec.cpg.analysis.Analyzer.allAnalyzers.forEach { it.run(result) }")
+            } else {
+                val analyzers = line.substring(p + 1).trim().split(" ")
 
-            val analyzers = line.substring(p + 1).trim().split(" ")
-            val snippet = mutableListOf<String>() // to be constructed
-
-//            // check if `result` is defined because it is required for the analyzers
-//            snippet.add(
-//                """
-//                if(
-//                    try {
-//                        Class.forName("result")
-//                        false
-//                    } catch (e: Exception) {
-//                        true
-//                    }
-//                ) {
-//                    println("result is not defined. Please run a translation first.")
-//                }
-//            """.trimIndent()
-//            )
-
-            for (analyzer in analyzers) {
-//                val validAnalyzer =
-//                    try {
-//                        // exists and has run method with signature run(TranslationResult): Void
-//                        Class.forName("de.fraunhofer.aisec.cpg.analysis.$analyzer")
-//                            .getDeclaredMethod(
-//                                "run",
-//                                de.fraunhofer.aisec.cpg.TranslationResult::class.java
-//                            )
-//                            .returnType == Void.TYPE
-//                    } catch (e: Exception) {
-//                        false
-//                    }
-                if (Analyzer.allAnalyzers.contains(analyzer)) {
-                    snippet.add("de.fraunhofer.aisec.cpg.analysis.$analyzer().run(result)")
-                } else {
-                    println(
-                        // TODO: logging
-                        "Analyzer \"$analyzer\" does not exist or isn't specified in de.fraunhofer.aisec.cpg.analysis.Analyzer.allAnalyzers"
-                    )
+                for (analyzer in analyzers) {
+                    if (Analyzer.allAnalyzers.contains(analyzer)) {
+                        snippet.add("de.fraunhofer.aisec.cpg.analysis.$analyzer().run(result)")
+                    } else {
+                        println(
+                            // TODO: logging
+                            "Analyzer \"$analyzer\" does not exist or isn't specified in de.fraunhofer.aisec.cpg.analysis.Analyzer.allAnalyzers"
+                        )
+                    }
                 }
             }
             return Command.Result.RunSnippets(snippet)
