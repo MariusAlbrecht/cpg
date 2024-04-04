@@ -41,6 +41,6 @@ class RunPluginTest {
 
         val result = plugin.execute(":run")
         assertTrue(result is Command.Result.RunSnippets)
-        assertEquals(4, result.snippetsToRun.toList().size)
+        assertEquals(Analyzer.allAnalyzers.size, result.snippetsToRun.toList().size)
     }
 }
